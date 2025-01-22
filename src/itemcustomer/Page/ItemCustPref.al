@@ -1,8 +1,9 @@
-page 50101 "Item Customer Pref"
+page 50102 "Item Customer Pref"
 {
     PageType = ListPart;
     SourceTable = Item;
     ApplicationArea = All;
+    RefreshOnActivate = true;
 
     layout
     {
@@ -28,24 +29,23 @@ page 50101 "Item Customer Pref"
                     begin
                         if Preferred then begin
                             // To Insert or update Customer Item Preference table
-                            if not CustItemPref.Get(CustomerNo, Rec."No.") then begin
+                            if not CustItemPref.Get(OwnerType, OwnerNo, Rec."No.") then begin
                                 CustItemPref.Init();
-                                CustItemPref."Customer No." := CustomerNo;
+                                CustItemPref."Owner Type" := OwnerType;
+                                CustItemPref."Owner No." := OwnerNo;
                                 CustItemPref."Item No." := Rec."No.";
                                 CustItemPref."Item Description" := Rec.Description;
                                 CustItemPref."Preferred" := true;
                                 CustItemPref.Insert();
-                            end else begin
+                            end else
                                 CustItemPref."Preferred" := true;
-                                CustItemPref.Modify();
-                            end;
-                        end else begin
+                            CustItemPref.Modify();
+                        end else
                             // To Update preference to false
-                            if CustItemPref.Get(CustomerNo, Rec."No.") then begin
+                            if CustItemPref.Get(OwnerType, OwnerNo, Rec."No.") then begin
                                 CustItemPref."Preferred" := false;
                                 CustItemPref.Modify();
                             end;
-                        end;
                     end;
                 }
             }
@@ -53,7 +53,8 @@ page 50101 "Item Customer Pref"
     }
 
     var
-        CustomerNo: Code[20];
+        OwnerType: Enum "Owner Type";
+        OwnerNo: Code[20];
         Preferred: Boolean;
 
     trigger OnAfterGetRecord()
@@ -61,20 +62,18 @@ page 50101 "Item Customer Pref"
         CustItemPref: Record "Customer Item Preferences";
     begin
         // To check if the current item is already marked as preferred for this customer
-        Preferred := false;
-        if CustItemPref.Get(CustomerNo, Rec."No.") then
+        Preferred := false; // Initialize to false for new customers
+        if CustItemPref.Get(OwnerType, OwnerNo, Rec."No.") then
             Preferred := CustItemPref."Preferred";
+
     end;
 
-    trigger OnOpenPage()
+    procedure SetOwnerInfo(NewOwnerType: Enum "Owner Type"; NewOwnerNo: Code[20])
     begin
-        // To ensure the Customer No. is passed from the parent page
-        if CustomerNo = '' then
-            Error('Customer No. must be set.');
+        OwnerType := NewOwnerType;
+        OwnerNo := NewOwnerNo;
+        //Message('OwnerType: %1, OwnerNo: %2', OwnerType, OwnerNo); // Debugging
     end;
 
-    procedure SetCustomerNo(NewCustomerNo: Code[20])
-    begin
-        CustomerNo := NewCustomerNo; // Store the passed customer number
-    end;
+
 }

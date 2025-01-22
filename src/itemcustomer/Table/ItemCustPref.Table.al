@@ -1,39 +1,41 @@
-table 50100 "Customer Item Preferences"
+table 50101 "Customer Item Preferences"
 {
     DataClassification = ToBeClassified;
 
     fields
     {
-        field(1; "Customer No."; Code[20])
+        field(1; "Owner Type"; Enum "Owner Type")
         {
-            DataClassification = CustomerContent;
-            TableRelation = Customer."No.";
-            Caption = 'Customer No.';
+            Caption = 'Owner Type';
         }
 
-        field(2; "Item No."; Code[20])
+        field(2; "Owner No."; Code[20])
         {
-            DataClassification = ToBeClassified;
+            Caption = 'Owner No.';
+            TableRelation = IF ("Owner Type" = CONST(Customer)) Customer."No."
+            ELSE IF ("Owner Type" = CONST(Vendor)) Vendor."No.";
+        }
+
+        field(3; "Item No."; Code[20])
+        {
             TableRelation = Item."No.";
             Caption = 'Item No.';
         }
 
-        field(3; "Preferred"; Boolean)
+        field(4; "Preferred"; Boolean)
         {
-            DataClassification = ToBeClassified;
             Caption = 'Preferred';
         }
 
-        field(4; "Item Description"; Text[200])
+        field(5; "Item Description"; Text[200])
         {
-            DataClassification = ToBeClassified;
-            Caption = 'Preferred';
+            Caption = 'Item Description';
         }
     }
 
     keys
     {
-        key(PK; "Customer No.", "Item No.")
+        key(PK; "Owner Type", "Owner No.", "Item No.")
         {
             Clustered = true;
         }
